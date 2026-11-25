@@ -45,7 +45,9 @@ def validate(entry):
     """Check the entry against the competition gate.
 
     The gate requires /output/entry.txt to be UTF-8 text of 1 to 200
-    characters, not only white space.
+    characters, not only white space. The entry is also a single line:
+    a newline or any other control character would break the one-line
+    format, so those are rejected here as well.
     """
     if not entry:
         raise ValueError("entry is empty")
@@ -53,6 +55,12 @@ def validate(entry):
         raise ValueError("entry is longer than 200 characters")
     if not entry.strip():
         raise ValueError("entry must not be whitespace only")
+    bad = [ch for ch in entry if ord(ch) < 0x20 or ord(ch) == 0x7F]
+    if bad:
+        raise ValueError(
+            "entry must be a single line with no control characters "
+            f"(found {len(bad)}: {bad[0]!r})"
+        )
     entry.encode("utf-8")
 
 
